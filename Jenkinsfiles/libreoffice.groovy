@@ -25,7 +25,7 @@ properties([
 
 pipeline {
   agent {
-    label 'jenkins-jx-base'
+    label 'jenkins-base'
   }
   parameters {
     string(name: 'LIBREOFFICE_VERSION', defaultValue: '7.1.1', description: 'Libreoffice version to download from documentfoundation.org and then to upload to packages.nuxeo.com.')
@@ -39,7 +39,7 @@ pipeline {
   stages {
     stage('Download and upload Libreoffice') {
       steps {
-        container('jx-base') {
+        container('base') {
           echo """
           ------------------------------------------------
           Download Libreoffice from documentfoundation.org
