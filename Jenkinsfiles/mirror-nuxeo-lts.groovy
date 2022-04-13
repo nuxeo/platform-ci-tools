@@ -37,7 +37,6 @@ properties([
 def isDryRun() {
   return DRY_RUN == 'true'
 }
-CRON = isDryRun() ? '' : 'H 1 * * *'
 
 def cloneRepo(url, branch, relativePath, shallow = false, noTags = false) {
   checkout([$class: 'GitSCM',
@@ -85,11 +84,6 @@ def getUpperRevision(upperDate) {
 pipeline {
   agent {
     label 'jenkins-base'
-  }
-  // configuring a cron trigger with job DSL in a multibranch pipeline doesn't seem to work,
-  // see https://issues.jenkins.io/browse/JENKINS-53991
-  triggers {
-    cron(CRON)
   }
   options {
     timeout(time: 1, unit: 'HOURS')
