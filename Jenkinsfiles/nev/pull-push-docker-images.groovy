@@ -40,7 +40,7 @@ void dockerPush(String dockerCfgDir, String image) {
 def openshiftClusters = [
   'io': 'docker-registry-default.apps.prod.nuxeo.io/common-infra',
   'oh': 'docker-registry-default.apps.oh.nuxeocloud.com/common-infra',
-  'uk': 'docker-registry-default.apps.uk.nuxeocloud.com/common-infra',
+//  'uk': 'docker-registry-default.apps.uk.nuxeocloud.com/common-infra',
   'va': 'docker-registry-default.apps.va.nuxeocloud.com/common-infra',
 ];
 
