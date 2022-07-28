@@ -37,12 +37,7 @@ void dockerPush(String dockerCfgDir, String image) {
   sh "docker --config $dockerCfgDir push $image"
 }
 
-def openshiftClusters = [
-  'io': 'docker-registry-default.apps.prod.nuxeo.io/common-infra',
-  'oh': 'docker-registry-default.apps.oh.nuxeocloud.com/common-infra',
-//  'uk': 'docker-registry-default.apps.uk.nuxeocloud.com/common-infra',
-  'va': 'docker-registry-default.apps.va.nuxeocloud.com/common-infra',
-];
+def lib
 
 pipeline {
   agent {
@@ -58,6 +53,8 @@ pipeline {
       steps {
         container('base') {
           script {
+            lib = load 'ci/Jenkinsfiles/nev/lib.groovy'
+
             def images = [];
             // before repository split, Nuxeo and ARender Docker images haven't the same tag
             if (params.LEGACY.toBoolean()) {
@@ -83,7 +80,7 @@ pipeline {
 
             def clusters = [];
             if ("${TO_CLUSTER}" == '*') {
-              clusters.addAll(openshiftClusters.keySet());
+              clusters.addAll(lib.getOpenshiftClusterKeys());
             } else {
               clusters.add("${TO_CLUSTER}".trim());
             }
@@ -96,7 +93,7 @@ pipeline {
                 images.each { fromImage ->
                   def fullFromImage = "${FROM_REGISTRY}/$fromImage";
                   
-                  def fullToImage = "${openshiftClusters.get(cluster)}/$fromImage";
+                  def fullToImage = "${lib.getOpenshiftRegistry(cluster)}/$fromImage";
                   if (params.LEGACY.toBoolean()) {
                     fullToImage = fullToImage.replaceAll('nuxeo\\/', '');
                   } else {
