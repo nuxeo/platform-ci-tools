@@ -53,7 +53,7 @@ pipeline {
       steps {
         container('base') {
           script {
-            lib = load 'ci/Jenkinsfiles/nev/lib.groovy'
+            lib = load 'Jenkinsfiles/nev/lib.groovy'
 
             def images = [];
             // before repository split, Nuxeo and ARender Docker images haven't the same tag
