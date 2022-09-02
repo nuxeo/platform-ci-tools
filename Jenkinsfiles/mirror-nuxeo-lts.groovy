@@ -24,7 +24,7 @@ NUXEO_REPOSITORY = 'nuxeo'
 NUXEO_REPOSITORY_URL = "${GITHUB_URL}/${NUXEO_ORGANIZATION}/${NUXEO_REPOSITORY}"
 NUXEO_LTS_REPOSITORY = 'nuxeo-lts'
 NUXEO_LTS_REPOSITORY_URL = "${GITHUB_URL}/${NUXEO_ORGANIZATION}/${NUXEO_LTS_REPOSITORY}"
-NUXEO_LTS_BRANCH = '2021'
+NUXEO_LTS_BRANCH = "${params.NUXEO_LTS_BRANCH}"
 DELAY_DAYS = 90
 SLACK_CHANNEL = 'platform-notifs'
 
@@ -103,9 +103,14 @@ pipeline {
             script {
               def upperDate = getUpperDate()
               def upperRevision = getUpperRevision(upperDate)
-              sh "git merge ${upperRevision}"
+              if (!isDryRun()) {
+                sh "git merge ${upperRevision}"
+                sh "git push origin ${NUXEO_LTS_BRANCH}"
+              } else {
+                // Dry run
+                sh "git diff --name-only origin/${NUXEO_LTS_BRANCH} ${upperRevision}"
+              }
             }
-            sh "git push origin ${NUXEO_LTS_BRANCH}"
           }
         }
       }
