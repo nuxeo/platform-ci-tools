@@ -28,12 +28,6 @@ NUXEO_LTS_BRANCH = "${params.NUXEO_LTS_BRANCH}"
 DELAY_DAYS = 90
 SLACK_CHANNEL = 'platform-notifs'
 
-properties([
-  [$class: 'GithubProjectProperty', projectUrlStr: "${GITHUB_URL}/${NUXEO_ORGANIZATION}/platform-ci-tools/"],
-  [$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', daysToKeepStr: '60', numToKeepStr: '60', artifactNumToKeepStr: '5']],
-  disableConcurrentBuilds(),
-])
-
 def isDryRun() {
   return DRY_RUN == 'true'
 }

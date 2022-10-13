@@ -20,11 +20,6 @@
 NUXEO_APB_CATALOG = 'nuxeo-apb-catalog'
 NUXEO_GITHUB_ORGANIZATION = 'https://github.com/nuxeo/'
 
-properties([
-  [$class: 'GithubProjectProperty', projectUrlStr: 'https://github.com/nuxeo/platform-ci-tools/'],
-  [$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', daysToKeepStr: '60', numToKeepStr: '60', artifactNumToKeepStr: '5']],
-])
-
 def cloneRepo(name, branch = 'master', relativePath = name) {
   checkout([$class: 'GitSCM',
     branches: [[name: branch]],

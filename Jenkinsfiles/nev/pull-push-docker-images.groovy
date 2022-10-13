@@ -17,11 +17,6 @@
  *     Kevin Leturc <kleturc@nuxeo.com>
  */
 
-properties([
-  [$class: 'GithubProjectProperty', projectUrlStr: 'https://github.com/nuxeo/platform-ci-tools/'],
-  [$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', daysToKeepStr: '60', numToKeepStr: '60', artifactNumToKeepStr: '5']],
-])
-
 void dockerPull(String image) {
   echo "Pulling Docker image: $image"
   sh "docker pull $image"
