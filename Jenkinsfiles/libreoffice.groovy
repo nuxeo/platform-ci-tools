@@ -17,18 +17,9 @@
  *     Kevin Leturc <kleturc@nuxeo.com>
  */
 
-properties([
-  [$class: 'GithubProjectProperty', projectUrlStr: 'https://github.com/nuxeo/platform-ci-tools/'],
-  [$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', daysToKeepStr: '60', numToKeepStr: '60', artifactNumToKeepStr: '5']],
-  disableConcurrentBuilds(),
-])
-
 pipeline {
   agent {
     label 'jenkins-base'
-  }
-  parameters {
-    string(name: 'LIBREOFFICE_VERSION', defaultValue: '7.1.1', description: 'Libreoffice version to download from documentfoundation.org and then to upload to packages.nuxeo.com.')
   }
   environment {
     DOCUMENT_FOUNDATION_REPOSITORY = 'https://packages.nuxeo.com/repository/document-foundation-raw'
