@@ -32,6 +32,10 @@ def isDryRun() {
   return DRY_RUN == 'true'
 }
 
+def setJobNaming() {
+  currentBuild.displayName = "#${currentBuild.number} (${NUXEO_LTS_BRANCH})"
+}
+
 def cloneRepo(url, branch, relativePath, shallow = false, noTags = false) {
   checkout([$class: 'GitSCM',
     branches: [[name: branch]],
@@ -86,6 +90,7 @@ pipeline {
     stage('Mirror') {
       steps {
         container('base') {
+          setJobNaming()
           cloneRepo(NUXEO_REPOSITORY_URL, NUXEO_LTS_BRANCH, NUXEO_REPOSITORY, true, true)
           dir(NUXEO_REPOSITORY) {
             sh "git remote add ${NUXEO_LTS_REPOSITORY} ${NUXEO_LTS_REPOSITORY_URL}.git"
