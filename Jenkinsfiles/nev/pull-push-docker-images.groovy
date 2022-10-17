@@ -16,22 +16,6 @@
  * Contributors:
  *     Kevin Leturc <kleturc@nuxeo.com>
  */
-
-void dockerPull(String image) {
-  echo "Pulling Docker image: $image"
-  sh "docker pull $image"
-}
-
-void dockerTag(String fromImage, String toImage) {
-  echo "Tagging Docker image: $fromImage to: $toImage"
-  sh "docker tag $fromImage $toImage"
-}
-
-void dockerPush(String dockerCfgDir, String image) {
-  echo "Pushing Docker image: $image"
-  sh "docker --config $dockerCfgDir push $image"
-}
-
 def lib
 
 pipeline {
@@ -54,8 +38,7 @@ pipeline {
             // before repository split, Nuxeo and ARender Docker images haven't the same tag
             if (params.LEGACY.toBoolean()) {
               def previewerImage = "${FROM_REGISTRY}/nuxeo/arender-previewer:${NEV_VERSION}";
-              dockerPull(previewerImage);
-              def arenderVersion = sh(returnStdout: true, script: "docker inspect --format='{{index .Config.Labels \"com.nuxeo.arender.arender-version\"}}' $previewerImage").trim();
+              def arenderVersion = sh(returnStdout: true, script: "skopeo inspect docker://${previewerImage} | jq '.Labels.\"com.nuxeo.arender.arender-version\"'").replaceAll('"', '').trim();
 
               images.add("nuxeo/arender-previewer:${NEV_VERSION}");
               images.add("arender-document-converter:$arenderVersion");
@@ -69,9 +52,6 @@ pipeline {
               images.add("nuxeo/arender-document-service-broker:${NEV_VERSION}");
               images.add("nuxeo/arender-document-text-handler:${NEV_VERSION}");
             }
-            images.each {
-              dockerPull("${FROM_REGISTRY}/$it");
-            }
 
             def clusters = [];
             if ("${TO_CLUSTER}" == '*') {
@@ -79,11 +59,13 @@ pipeline {
             } else {
               clusters.add("${TO_CLUSTER}".trim());
             }
+            def dockerCfgDir = "/home/jenkins/skopeo"
+            sh "mkdir -p $dockerCfgDir"
+
             clusters.each { cluster ->
               withCredentials([file(credentialsId: "openshift-$cluster-dockercfg", variable: 'DOCKER_CFG')]) {
-                def dockerCfgDir = "/tmp/.docker-$cluster";
-                sh "mkdir $dockerCfgDir";
-                sh "mv \${DOCKER_CFG} $dockerCfgDir/config.json";
+                def dockerCfg = "$dockerCfgDir/dockercfg-${cluster}.json"
+                sh "mv \${DOCKER_CFG} ${dockerCfg}"
 
                 images.each { fromImage ->
                   def fullFromImage = "${FROM_REGISTRY}/$fromImage";
@@ -95,10 +77,8 @@ pipeline {
                     fullToImage = fullToImage.replaceAll('nuxeo\\/', 'nuxeo-');
                   }
 
-                  dockerTag(fullFromImage, fullToImage)
-                  dockerPush(dockerCfgDir, fullToImage);
+                  sh "skopeo copy --dest-authfile ${dockerCfg} --dest-tls-verify=false docker://${fullFromImage} docker://${fullToImage}"
                 }
-                sh "rm -rf $dockerCfgDir"
               }
             }
           }
