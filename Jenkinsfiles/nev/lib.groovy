@@ -19,10 +19,6 @@
 
 def getOpenshiftClusters() {
   return [
-    'io': [
-      'registry': 'docker-registry-default.apps.prod.nuxeo.io/common-infra',
-      'url': 'https://openshift.prod.nuxeo.io',
-    ],
     'oh': [
       'registry': 'docker-registry-default.apps.oh.nuxeocloud.com/common-infra',
       'url': 'https://openshift.oh.nuxeocloud.com',
