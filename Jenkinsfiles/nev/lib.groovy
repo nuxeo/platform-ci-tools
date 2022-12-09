@@ -23,10 +23,10 @@ def getOpenshiftClusters() {
       'registry': 'docker-registry-default.apps.oh.nuxeocloud.com/common-infra',
       'url': 'https://openshift.oh.nuxeocloud.com',
     ],
-//  'uk': [
-//    'registry': 'docker-registry-default.apps.uk.nuxeocloud.com/common-infra',
-//    'url': 'http://openshift.uk.nuxeocloud.com',
-//  ],
+    'uk': [
+      'registry': 'docker-registry-default.apps.uk.nuxeocloud.com/common-infra',
+      'url': 'http://openshift.uk.nuxeocloud.com',
+    ],
     'va': [
       'registry': 'docker-registry-default.apps.va.nuxeocloud.com/common-infra',
       'url': 'https://openshift.va.nuxeocloud.com',
