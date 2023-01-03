@@ -16,26 +16,9 @@
  * Contributors:
  *     Kevin Leturc <kleturc@nuxeo.com>
  */
+library identifier: "platform-ci-shared-library@v0.0.11"
 
 NUXEO_APB_CATALOG = 'nuxeo-apb-catalog'
-NUXEO_GITHUB_ORGANIZATION = 'https://github.com/nuxeo/'
-
-def cloneRepo(name, branch = 'master', relativePath = name) {
-  checkout([$class: 'GitSCM',
-    branches: [[name: branch]],
-    browser: [$class: 'GithubWeb', repoUrl: "${NUXEO_GITHUB_ORGANIZATION}${name}"],
-    doGenerateSubmoduleConfigurations: false,
-    extensions: [
-      [$class: 'RelativeTargetDirectory', relativeTargetDir: relativePath],
-      [$class: 'WipeWorkspace'],
-      [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false, timeout: 60],
-      [$class: 'CheckoutOption', timeout: 60],
-      [$class: 'LocalBranch']
-    ],
-    submoduleCfg: [],
-    userRemoteConfigs: [[credentialsId: 'jx-pipeline-git-github-git', url: "${NUXEO_GITHUB_ORGANIZATION}${name}"]]
-  ])
-}
 
 def deployNEVStack(part, openshiftEnv) {
   echo """
@@ -104,8 +87,8 @@ pipeline {
     stage('Deploy the NEV stack') {
       steps {
         container('openshift') {
-          cloneRepo(NUXEO_APB_CATALOG)
           script {
+            nxGit.cloneRepo(name: NUXEO_APB_CATALOG, branch: 'master')
             lib = load 'Jenkinsfiles/nev/lib.groovy'
             def openshiftEnv = env.TO_ENVIRONMENT.replaceFirst('.*/', '')
             dir(NUXEO_APB_CATALOG) {
