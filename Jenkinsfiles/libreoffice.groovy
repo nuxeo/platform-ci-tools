@@ -16,14 +16,13 @@
  * Contributors:
  *     Kevin Leturc <kleturc@nuxeo.com>
  */
+library identifier: "platform-ci-shared-library@v0.0.11"
 
 pipeline {
   agent {
     label 'jenkins-base'
   }
   environment {
-    DOCUMENT_FOUNDATION_REPOSITORY = 'https://packages.nuxeo.com/repository/document-foundation-raw'
-
     LIBREOFFICE_VERSION = "${params.LIBREOFFICE_VERSION}"
     LIBREOFFICE_TARBALL = "LibreOffice_${LIBREOFFICE_VERSION}_Linux_x86-64_rpm.tar.gz"
   }
@@ -31,18 +30,19 @@ pipeline {
     stage('Download and upload Libreoffice') {
       steps {
         container('base') {
-          echo """
-          ------------------------------------------------
-          Download Libreoffice from documentfoundation.org
-          ------------------------------------------------"""
-          sh 'curl --fail -L https://download.documentfoundation.org/libreoffice/stable/$LIBREOFFICE_VERSION/rpm/x86_64/$LIBREOFFICE_TARBALL --output $LIBREOFFICE_TARBALL'
+          script {
+            echo """
+            ------------------------------------------------
+            Download Libreoffice from documentfoundation.org
+            ------------------------------------------------"""
+            sh 'curl --fail -L https://download.documentfoundation.org/libreoffice/stable/$LIBREOFFICE_VERSION/rpm/x86_64/$LIBREOFFICE_TARBALL --output $LIBREOFFICE_TARBALL'
 
-          echo """
-          ------------------------------------------------
-          Upload Libreoffice to packages.nuxeo.com
-          ------------------------------------------------"""
-          withCredentials([usernameColonPassword(credentialsId: 'packages.nuxeo.com-auth', variable: 'PACKAGES_PASS')]) {
-            sh 'curl -i --fail -u $PACKAGES_PASS --upload-file $LIBREOFFICE_TARBALL "$DOCUMENT_FOUNDATION_REPOSITORY/$LIBREOFFICE_TARBALL"'
+            echo """
+            ------------------------------------------------
+            Upload Libreoffice to packages.nuxeo.com
+            ------------------------------------------------"""
+            nxUtils.uploadFile(credentialsId: 'packages.nuxeo.com-auth', file: env.LIBREOFFICE_TARBALL,
+                url: 'https://packages.nuxeo.com/repository/document-foundation-raw/')
           }
         }
       }

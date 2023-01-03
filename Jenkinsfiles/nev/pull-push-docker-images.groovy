@@ -16,6 +16,8 @@
  * Contributors:
  *     Kevin Leturc <kleturc@nuxeo.com>
  */
+library identifier: "platform-ci-shared-library@v0.0.11"
+
 def lib
 
 pipeline {
@@ -38,7 +40,7 @@ pipeline {
             // before repository split, Nuxeo and ARender Docker images haven't the same tag
             if (params.LEGACY.toBoolean()) {
               def previewerImage = "${FROM_REGISTRY}/nuxeo/arender-previewer:${NEV_VERSION}";
-              def arenderVersion = sh(returnStdout: true, script: "skopeo inspect docker://${previewerImage} | jq '.Labels.\"com.nuxeo.arender.arender-version\"'").replaceAll('"', '').trim();
+              def arenderVersion = nxDocker.getLabel(image: previewerImage, label: 'com.nuxeo.arender.arender-version')
 
               images.add("nuxeo/arender-previewer:${NEV_VERSION}");
               images.add("arender-document-converter:$arenderVersion");

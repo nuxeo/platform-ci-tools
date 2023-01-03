@@ -18,6 +18,8 @@
  */
 import java.time.LocalDate
 
+library identifier: "platform-ci-shared-library@v0.0.11"
+
 GITHUB_URL = 'https://github.com'
 NUXEO_ORGANIZATION = 'nuxeo'
 NUXEO_REPOSITORY = 'nuxeo'
@@ -26,31 +28,9 @@ NUXEO_LTS_REPOSITORY = 'nuxeo-lts'
 NUXEO_LTS_REPOSITORY_URL = "${GITHUB_URL}/${NUXEO_ORGANIZATION}/${NUXEO_LTS_REPOSITORY}"
 NUXEO_LTS_BRANCH = "${params.NUXEO_LTS_BRANCH}"
 DELAY_DAYS = 90
-SLACK_CHANNEL = 'platform-notifs'
-
-def isDryRun() {
-  return DRY_RUN == 'true'
-}
 
 def setJobNaming() {
   currentBuild.displayName = "#${currentBuild.number} (${NUXEO_LTS_BRANCH})"
-}
-
-def cloneRepo(url, branch, relativePath, shallow = false, noTags = false) {
-  checkout([$class: 'GitSCM',
-    branches: [[name: branch]],
-    browser: [$class: 'GithubWeb', repoUrl: url],
-    doGenerateSubmoduleConfigurations: false,
-    extensions: [
-      [$class: 'RelativeTargetDirectory', relativeTargetDir: relativePath],
-      [$class: 'WipeWorkspace'],
-      [$class: 'CloneOption', depth: 0, noTags: noTags, reference: '', shallow: shallow, timeout: 60],
-      [$class: 'CheckoutOption', timeout: 60],
-      [$class: 'LocalBranch']
-    ],
-    submoduleCfg: [],
-    userRemoteConfigs: [[credentialsId: 'jx-pipeline-git-github-git', url: url]]
-  ])
 }
 
 def getToday() {
@@ -90,21 +70,17 @@ pipeline {
     stage('Mirror') {
       steps {
         container('base') {
-          setJobNaming()
-          cloneRepo(NUXEO_REPOSITORY_URL, NUXEO_LTS_BRANCH, NUXEO_REPOSITORY, true, true)
-          dir(NUXEO_REPOSITORY) {
-            sh "git remote add ${NUXEO_LTS_REPOSITORY} ${NUXEO_LTS_REPOSITORY_URL}.git"
-            sh """
-              jx step git credentials
-              git config credential.helper store
-              git fetch ${NUXEO_LTS_REPOSITORY} ${NUXEO_LTS_BRANCH}
-            """
-            script {
+          script {
+            setJobNaming()
+            nxGit.cloneRepository(name: NUXEO_REPOSITORY, branch: NUXEO_LTS_BRANCH, shallow: true, noTags: true)
+            dir(NUXEO_REPOSITORY) {
+              sh "git remote add ${NUXEO_LTS_REPOSITORY} ${NUXEO_LTS_REPOSITORY_URL}.git"
+              nxGit.fetch(remote: NUXEO_LTS_REPOSITORY, reference: NUXEO_LTS_BRANCH)
               def upperDate = getUpperDate()
               def upperRevision = getUpperRevision(upperDate)
-              if (!isDryRun()) {
+              if (!nxUtils.isDryRun()) {
                 sh "git merge ${upperRevision}"
-                sh "git push origin ${NUXEO_LTS_BRANCH}"
+                nxGit.push(reference: NUXEO_LTS_BRANCH)
               } else {
                 // Dry run
                 sh "git diff --name-only origin/${NUXEO_LTS_BRANCH} ${upperRevision}"
@@ -118,24 +94,20 @@ pipeline {
   post {
     always {
       script {
-        if (!isDryRun()) {
-          step([$class: 'JiraIssueUpdater', issueSelector: [$class: 'DefaultIssueSelector'], scm: scm])
-        }
+        nxJira.updateIssues()
       }
     }
     success {
       script {
-        if (!isDryRun()
-          && !hudson.model.Result.SUCCESS.toString().equals(currentBuild.getPreviousBuild()?.getResult())) {
-          slackSend(channel: "${SLACK_CHANNEL}", color: 'good', message: "Successfully mirrored ${NUXEO_LTS_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} to ${NUXEO_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} ${BUILD_URL}")
+        if (!hudson.model.Result.SUCCESS.toString().equals(currentBuild.getPreviousBuild()?.getResult())) {
+          nxSlack.success(message: "Successfully mirrored ${NUXEO_LTS_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} to ${NUXEO_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} ${BUILD_URL}")
         }
       }
     }
     unsuccessful {
       script {
-        if (!isDryRun()
-          && ![hudson.model.Result.ABORTED.toString(), hudson.model.Result.NOT_BUILT.toString()].contains(currentBuild.result)) {
-          slackSend(channel: "${SLACK_CHANNEL}", color: 'danger', message: "Failed to mirror ${NUXEO_LTS_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} to ${NUXEO_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} ${BUILD_URL}")
+        if (![hudson.model.Result.ABORTED.toString(), hudson.model.Result.NOT_BUILT.toString()].contains(currentBuild.result)) {
+          nxSlack.error(message: "Failed to mirror ${NUXEO_LTS_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} to ${NUXEO_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} ${BUILD_URL}")
         }
       }
     }
