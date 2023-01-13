@@ -88,7 +88,7 @@ pipeline {
       steps {
         container('openshift') {
           script {
-            nxGit.cloneRepo(name: NUXEO_APB_CATALOG, branch: 'master')
+            nxGit.cloneRepository(name: NUXEO_APB_CATALOG, branch: 'master')
             lib = load 'Jenkinsfiles/nev/lib.groovy'
             def openshiftEnv = env.TO_ENVIRONMENT.replaceFirst('.*/', '')
             dir(NUXEO_APB_CATALOG) {
