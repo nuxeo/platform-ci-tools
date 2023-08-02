@@ -1,0 +1,38 @@
+image:
+  repository: {{ printf "%s/nuxeo/nuxeo-explorer-export" (requiredEnv "DOCKER_REGISTRY") }}
+  tag: {{ requiredEnv "VERSION" | quote }}
+  pullSecrets:
+  - name: kubernetes-docker-cfg
+podLabels:
+  {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 2 }}
+  dev.nuxeo.com/app: nuxeo
+  dev.nuxeo.com/resource: pod
+service:
+  labels:
+    {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 4 }}
+    dev.nuxeo.com/app: nuxeo
+    dev.nuxeo.com/resource: service
+resources:
+  requests:
+    cpu: 2
+    memory: 6Gi
+  limits:
+    cpu: 4
+    memory: 6Gi
+customEnvs:
+- name: NUXEO_CLID
+  valueFrom:
+    secretKeyRef:
+      name: instance-clid
+      key: instance.clid
+customProperties:
+  templates-override: |
+    # NXP-29494: override templates to avoid activating s3
+    nuxeo.templates=default
+tolerations:
+- effect: NoSchedule
+  key: team
+  operator: Equal
+  value: platform
+nodeSelector:
+  team: platform
