@@ -16,7 +16,7 @@
  * Contributors:
  *     Kevin Leturc <kleturc@nuxeo.com>
  */
-library identifier: "platform-ci-shared-library@v0.0.27"
+library identifier: "platform-ci-shared-library@v0.0.28"
 
 ARENDER_DEPLOYMENT = 'arender-deployment'
 ARENDER_DEPLOYMENT_BASE_BRANCH = 'main'
@@ -32,6 +32,7 @@ def createDeploymentPullRequest(Map args = [:]) {
   if (args.project) {
     repositoryProject += "/${args.project}"
   }
+  def autoMerge = args.autoMerge ?: false
   echo "Creating Pull Request for repository project: ${repositoryProject}"
   // create a working branch
   def branchNameSuffix = NEV_DOCKER_VERSION ? "docker-to-${NEV_DOCKER_VERSION}" : "chart-to-${NEV_CHART_VERSION}"
@@ -53,7 +54,11 @@ def createDeploymentPullRequest(Map args = [:]) {
   }
   // commit, push and create a pull request
   nxGit.commitPush(message: message, branch: branchName)
-  nxGitHub.createPullRequest(base: ARENDER_DEPLOYMENT_BASE_BRANCH, title: message, body: message)
+  def pullRequestURL = nxGitHub.createPullRequest(base: ARENDER_DEPLOYMENT_BASE_BRANCH, title: message, body: message)
+  if (autoMerge) {
+    // enable auto merge
+    nxGitHub.mergePullRequest(url: pullRequestURL, auto: true)
+  }
 }
 
 pipeline {
@@ -88,7 +93,7 @@ pipeline {
             nxGit.cloneRepository(name: ARENDER_DEPLOYMENT, branch: ARENDER_DEPLOYMENT_BASE_BRANCH)
             dir(ARENDER_DEPLOYMENT) {
               if (TARGET_ENVIRONMENT == "dev") {
-                createDeploymentPullRequest(environment: TARGET_ENVIRONMENT)
+                createDeploymentPullRequest(environment: TARGET_ENVIRONMENT, autoMerge: true)
               } else if (TARGET_ENVIRONMENT == "uat") {
                 // arender-deployment GitHub action expects to have only one environment change per commit to deploy it
                 for (def project : ['backend', 'nev-2019', 'nev-2021', 'nev-2023']) {
