@@ -59,6 +59,7 @@ def createDeploymentPullRequest(Map args = [:]) {
     // enable auto merge
     nxGitHub.mergePullRequest(url: pullRequestURL, auto: true)
   }
+  return pullRequestURL
 }
 
 pipeline {
@@ -93,12 +94,18 @@ pipeline {
             nxGit.cloneRepository(name: ARENDER_DEPLOYMENT, branch: ARENDER_DEPLOYMENT_BASE_BRANCH)
             dir(ARENDER_DEPLOYMENT) {
               if (TARGET_ENVIRONMENT == "dev") {
-                createDeploymentPullRequest(environment: TARGET_ENVIRONMENT, autoMerge: true)
+                def pullRequestURL = createDeploymentPullRequest(environment: TARGET_ENVIRONMENT, autoMerge: true)
+                // populate environment for upstream job
+                env.ARENDER_DEPLOYMENT_PR_URLS = pullRequestURL
               } else if (TARGET_ENVIRONMENT == "uat") {
+                def pullRequestURLs = []
                 // arender-deployment GitHub action expects to have only one environment change per commit to deploy it
                 for (def project : ['backend', 'nev-2019', 'nev-2021', 'nev-2023']) {
-                  createDeploymentPullRequest(environment: TARGET_ENVIRONMENT, project: project)
+                  def pullRequestURL = createDeploymentPullRequest(environment: TARGET_ENVIRONMENT, project: project)
+                  pullRequestURLs.add(pullRequestURL)
                 }
+                // populate environment for upstream job
+                env.ARENDER_DEPLOYMENT_PR_URLS = pullRequestURLs.join(',')
               }
             }
           }
