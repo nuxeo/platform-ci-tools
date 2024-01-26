@@ -219,7 +219,10 @@ pipeline {
     }
     unsuccessful {
       script {
-        nxSlack.error(message: "Failed to <${BUILD_URL}|upload> nuxeo-explorer reference export for ${NUXEO_VERSION}")
+        // TODO NXP-32209
+        if (isNuxeoPromoted(NUXEO_VERSION)) {
+          nxSlack.error(message: "Failed to <${BUILD_URL}|upload> nuxeo-explorer reference export for ${NUXEO_VERSION}")
+        }
       }
     }
   }
