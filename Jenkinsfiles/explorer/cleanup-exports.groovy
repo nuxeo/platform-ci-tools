@@ -26,6 +26,10 @@ library identifier: "platform-ci-shared-library@v0.0.26"
 * Triggered daily by a cron.
 */
 
+boolean isExplorerBeta(explorerUrl) {
+  return explorerUrl.contains("beta")
+}
+
 pipeline {
   agent {
     label 'jenkins-base'
@@ -101,7 +105,10 @@ pipeline {
   post {
     unsuccessful {
       script {
-        nxSlack.error(message: "Failed to cleanup old exports on ${params.TARGET_URL}: <${BUILD_URL}|#${BUILD_NUMBER}>")
+        // TODO NXP-32209
+        if (!isExplorerBeta(params.TARGET_URL)) {
+          nxSlack.error(message: "Failed to cleanup old exports on ${params.TARGET_URL}: <${BUILD_URL}|#${BUILD_NUMBER}>")
+        }
       }
     }
   }
