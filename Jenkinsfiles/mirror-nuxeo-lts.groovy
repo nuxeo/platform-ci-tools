@@ -18,7 +18,7 @@
  */
 import java.time.LocalDate
 
-library identifier: "platform-ci-shared-library@v0.0.11"
+library identifier: "platform-ci-shared-library@v0.0.38"
 
 GITHUB_URL = 'https://github.com'
 NUXEO_ORGANIZATION = 'nuxeo'
