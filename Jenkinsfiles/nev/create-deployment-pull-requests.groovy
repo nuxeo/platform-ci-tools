@@ -16,7 +16,7 @@
  * Contributors:
  *     Kevin Leturc <kleturc@nuxeo.com>
  */
-library identifier: "platform-ci-shared-library@v0.0.28"
+library identifier: "platform-ci-shared-library@v0.0.38"
 
 ARENDER_DEPLOYMENT = 'arender-deployment'
 ARENDER_DEPLOYMENT_BASE_BRANCH = 'main'
