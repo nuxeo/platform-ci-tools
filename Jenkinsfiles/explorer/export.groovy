@@ -18,7 +18,7 @@
  *     Kevin Leturc <kleturc@nuxeo.com>
  *     Anahide Tchertchian
  */
-library identifier: "platform-ci-shared-library@v0.0.27"
+library identifier: "platform-ci-shared-library@v0.0.39"
 
 // package list to use when exporting a build version of Nuxeo Platform
 DEFAULT_PACKAGE_LIST = [
