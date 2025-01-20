@@ -16,9 +16,9 @@
  * Contributors:
  *     Antoine Taillefer <ataillefer@nuxeo.com>
  */
-library identifier: "platform-ci-shared-library@v0.0.22"
+library identifier: "platform-ci-shared-library@v0.0.41"
 
-NAMESPACE_SUFFIX_PATTERN = '-pr-[0-9]+-preview'
+NAMESPACE_SUFFIX_PATTERN = '-preview'
 
 pipeline {
   agent {
