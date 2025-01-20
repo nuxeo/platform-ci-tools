@@ -1,0 +1,24 @@
+repositories:
+  - name: nev
+    url: {{ requiredEnv "NEV_CHART_REPO" }}
+    username: {{ requiredEnv "NEV_CHART_REPO_USERNAME" }}
+    password: {{ requiredEnv "NEV_CHART_REPO_PASSWORD" }}
+  - name: nuxeo
+    url: https://packages.nuxeo.com/repository/helm-releases-public/
+
+helmDefaults:
+  timeout: 300
+  wait: true
+
+releases:
+  - name: nev
+    chart: nev/nuxeo-enhanced-viewer
+    version: {{ requiredEnv "NEV_CHART_VERSION" | quote }}
+    values:
+      - values/values-nev.yaml.gotmpl
+      - values/values-nev-tolerations.yaml.gotmpl
+  - name: nuxeo
+    chart: nuxeo/nuxeo
+    version: {{ requiredEnv "NUXEO_CHART_VERSION" | quote }}
+    values:
+      - values/values-nuxeo.yaml.gotmpl

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nev-preview
+data:
+  nevChartVersion: "$NEV_CHART_VERSION"
+  arenderNuxeoVersion: "$ARENDER_NUXEO_VERSION"
+  nuxeoArenderConnectorVersion: "$NUXEO_ARENDER_CONNECTOR_VERSION"
