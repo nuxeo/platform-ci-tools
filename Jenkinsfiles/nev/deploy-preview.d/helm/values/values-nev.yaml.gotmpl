@@ -1,0 +1,80 @@
+global:
+  arenderVersion: {{ requiredEnv "ARENDER_NUXEO_VERSION" | quote }}
+  imagePullSecrets:
+    - name: kubernetes-docker-cfg
+
+arender:
+  rendition:
+    sharedTmpFolder:
+      storage:
+        className: nfs
+        # default is 50Gi but our nfs provisioner has fewer space to provide
+        size: 5Gi
+    broker:
+      image:
+        repository: {{ requiredEnv "ARENDER_NUXEO_REGISTRY" }}/nuxeo/arender-document-service-broker
+      replicaCount: 2
+      autoscale:
+        enabled: true
+      deployment:
+        podLabels:
+          {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 10 }}
+          dev.nuxeo.com/app: nev-rendition-broker
+          dev.nuxeo.com/resource: pod
+    converter:
+      image:
+        repository: {{ requiredEnv "ARENDER_NUXEO_REGISTRY" }}/nuxeo/arender-document-converter
+      replicaCount: 2
+      autoscale:
+        enabled: true
+      deployment:
+        podLabels:
+          {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 10 }}
+          dev.nuxeo.com/app: nev-rendition-converter
+          dev.nuxeo.com/resource: pod
+    handler:
+      image:
+        repository: {{ requiredEnv "ARENDER_NUXEO_REGISTRY" }}/nuxeo/arender-document-text-handler
+      replicaCount: 2
+      autoscale:
+        enabled: true
+      deployment:
+        podLabels:
+          {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 10 }}
+          dev.nuxeo.com/app: nev-rendition-handler
+          dev.nuxeo.com/resource: pod
+    renderer:
+      image:
+        repository: {{ requiredEnv "ARENDER_NUXEO_REGISTRY" }}/nuxeo/arender-document-renderer
+      replicaCount: 2
+      autoscale:
+        enabled: true
+      deployment:
+        podLabels:
+          {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 10 }}
+          dev.nuxeo.com/app: nev-rendition-renderer
+          dev.nuxeo.com/resource: pod
+  viewer:
+    image:
+      repository: {{ requiredEnv "ARENDER_NUXEO_REGISTRY" }}/nuxeo/arender-ui
+    replicaCount: 2
+    autoscale:
+      enabled: true
+    deployment:
+      podLabels:
+        {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 8 }}
+        dev.nuxeo.com/app: nev-viewer
+        dev.nuxeo.com/resource: pod
+    nuxeo:
+      server:
+        url: https://nuxeo-{{ .Namespace }}.platform.dev.nuxeo.com/
+      oauth2:
+        secretValue: "dummySecret"
+    ingress:
+      enabled: true
+      hosts:
+        - host: nev-{{ .Namespace }}.platform.dev.nuxeo.com
+      tls:
+        - secretName: platform-tls
+          hosts:
+            - nev-{{ .Namespace }}.platform.dev.nuxeo.com
