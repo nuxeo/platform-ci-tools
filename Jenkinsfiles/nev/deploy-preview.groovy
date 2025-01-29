@@ -57,6 +57,16 @@ boolean isPRVersion(version) {
   return version =~ /^.*-PR-.*$/
 }
 
+String getMarkdownVersions() {
+  return """
+- NEV Helm chart: `${NEV_CHART_VERSION}`
+- ARender Nuxeo: `${ARENDER_NUXEO_VERSION}`
+- Nuxeo Helm chart: `${NUXEO_CHART_VERSION}`
+- Nuxeo: `${NUXEO_VERSION}`
+- Nuxeo ARender connector: `${NUXEO_ARENDER_CONNECTOR_VERSION}`
+"""
+}
+
 pipeline {
   agent {
     label "jenkins-base"
@@ -173,6 +183,35 @@ pipeline {
         always {
           archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/**/*.yaml'
         }
+      }
+    }
+  }
+  post {
+    always {
+      script {
+        currentBuild.description = "NEV chart ${NEV_CHART_VERSION}/ARender ${ARENDER_NUXEO_VERSION}/NEV package ${NUXEO_ARENDER_CONNECTOR_VERSION}"
+      }
+    }
+    success {
+      script {
+        env.PR_COMMENT = """
+NEV preview has been deployed with the following versions:
+
+${getMarkdownVersions()}
+
+You can access Nuxeo [here](${NEV_PREVIEW_URL}).
+"""
+      }
+    }
+    unsuccessful {
+      script {
+        env.PR_COMMENT = """
+Failed to deploy NEV preview with the following versions:
+
+${getMarkdownVersions()}
+
+You can access the deployment job artifacts [here](${BUILD_URL}artifact/).
+"""
       }
     }
   }
