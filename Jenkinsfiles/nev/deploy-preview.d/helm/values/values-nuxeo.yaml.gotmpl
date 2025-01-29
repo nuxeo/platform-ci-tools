@@ -1,5 +1,5 @@
 image:
-  repository: docker-private.packages.nuxeo.com/nuxeo/nuxeo
+  repository: {{ requiredEnv "NUXEO_REGISTRY" }}/{{ requiredEnv "NUXEO_IMAGE" }}
   tag: {{ requiredEnv "NUXEO_VERSION" | quote }}
   pullSecrets:
     - name: kubernetes-docker-cfg
