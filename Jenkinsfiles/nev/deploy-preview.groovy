@@ -73,7 +73,7 @@ pipeline {
   }
   environment {
     NUXEO_CHART_VERSION = '~3.1.8'
-    NUXEO_VERSION = '2023'
+    NUXEO_DEFAULT_VERSION = '2023'
     PREVIEW_NAMESPACE = getPreviewNamespace(params.BRANCH_NAME)
     VERSIONING_CONFIGMAP = 'nev-preview'
   }
@@ -102,7 +102,7 @@ pipeline {
               echo "Compute versions from job parameters and default values"
               env.NEV_CHART_VERSION = params.NEV_CHART_VERSION ?: getVersionFromLatestTag('https://github.com/nuxeo/arender-helm-chart.git')
               env.ARENDER_NUXEO_VERSION = params.ARENDER_NUXEO_VERSION ?: getVersionFromLatestTag('https://github.com/nuxeo/arender-nuxeo.git')
-              env.NUXEO_ARENDER_CONNECTOR_VERSION = params.NUXEO_ARENDER_CONNECTOR_VERSION ?: getLatestPackageVersion('nuxeo-arender', env.NUXEO_VERSION)
+              env.NUXEO_ARENDER_CONNECTOR_VERSION = params.NUXEO_ARENDER_CONNECTOR_VERSION ?: getLatestPackageVersion('nuxeo-arender', NUXEO_DEFAULT_VERSION)
               logVersions()
 
               echo "Create versioning ConfigMap"
@@ -131,6 +131,19 @@ pipeline {
               ? DOCKER_REGISTRY
               : ARENDER_DOCKER_REGISTRY
             echo "ARENDER_NUXEO_REGISTRY = ${ARENDER_NUXEO_REGISTRY}"
+
+            if (isPRVersion(NUXEO_ARENDER_CONNECTOR_VERSION)) {
+              env.NUXEO_REGISTRY = DOCKER_REGISTRY
+              env.NUXEO_IMAGE = 'nuxeo/nuxeo-arender-connector'
+              env.NUXEO_VERSION = NUXEO_ARENDER_CONNECTOR_VERSION
+            } else {
+              env.NUXEO_REGISTRY = PRIVATE_DOCKER_REGISTRY
+              env.NUXEO_IMAGE = 'nuxeo/nuxeo'
+              env.NUXEO_VERSION = nxUtils.getMajorVersion(version: NUXEO_ARENDER_CONNECTOR_VERSION)
+            }
+            echo "NUXEO_REGISTRY = ${NUXEO_REGISTRY}"
+            echo "NUXEO_IMAGE = ${NUXEO_IMAGE}"
+            echo "NUXEO_VERSION = ${NUXEO_VERSION}"
           }
         }
       }
