@@ -1,7 +1,6 @@
 image:
   repository: docker-private.packages.nuxeo.com/nuxeo/nuxeo
   tag: {{ requiredEnv "NUXEO_VERSION" | quote }}
-  pullPolicy: Always
   pullSecrets:
     - name: kubernetes-docker-cfg
 podLabels:
