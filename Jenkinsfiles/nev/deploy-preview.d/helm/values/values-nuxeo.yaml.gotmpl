@@ -20,6 +20,8 @@ customEnvs:
       secretKeyRef:
         name: "instance-clid"
         key: instance.clid
+  - name: JAVA_OPTS
+    value: -Djdk.util.zip.disableZip64ExtraFieldValidation=true
 customProperties:
   nev: |
     arender.server.previewer.host=https://nev-{{ .Namespace }}.platform.dev.nuxeo.com
