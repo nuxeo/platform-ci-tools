@@ -16,6 +16,15 @@ arender:
       replicaCount: 2
       autoscale:
         enabled: true
+      resources:
+        limits:
+          # leave it empty to meet best practice
+          # cpu: 2
+          # keep memory limits equals to requests to meet best practice
+          memory: 1Gi
+        requests:
+          cpu: 1
+          memory: 1Gi
       deployment:
         podLabels:
           {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 10 }}
@@ -27,6 +36,15 @@ arender:
       replicaCount: 2
       autoscale:
         enabled: true
+      resources:
+        limits:
+          # leave it empty to meet best practice
+          # cpu: 2
+          # keep memory limits equals to requests to meet best practice
+          memory: 1Gi
+        requests:
+          cpu: 1
+          memory: 1Gi
       deployment:
         podLabels:
           {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 10 }}
@@ -38,6 +56,15 @@ arender:
       replicaCount: 2
       autoscale:
         enabled: true
+      resources:
+        limits:
+          # leave it empty to meet best practice
+          # cpu: 2
+          # keep memory limits equals to requests to meet best practice
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
       deployment:
         podLabels:
           {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 10 }}
@@ -49,6 +76,15 @@ arender:
       replicaCount: 2
       autoscale:
         enabled: true
+      resources:
+        limits:
+          # leave it empty to meet best practice
+          # cpu: 2
+          # keep memory limits equals to requests to meet best practice
+          memory: 1Gi
+        requests:
+          cpu: 1
+          memory: 1Gi
       deployment:
         podLabels:
           {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 10 }}
@@ -60,6 +96,15 @@ arender:
     replicaCount: 2
     autoscale:
       enabled: true
+    resources:
+      limits:
+        # leave it empty to meet best practice
+        # cpu: 2
+        # keep memory limits equals to requests to meet best practice
+        memory: 1Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
     deployment:
       podLabels:
         {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 8 }}
