@@ -36,7 +36,14 @@ String getLatestPackageVersion(name, ltsVersion) {
 }
 
 String getPreviewNamespace(branchName) {
-  return "${nxK8s.getCurrentNamespace()}-nev-${branchName ?: 'main'}-preview".replaceAll('\\.', '-').toLowerCase()
+  branchName = branchName ?: 'main'
+  def namespace = "${nxK8s.getCurrentNamespace()}-nev-${branchName}-preview".replaceAll('\\.', '-').toLowerCase()
+  def aboveKubernetesLimit = namespace.length() - 63
+  if (aboveKubernetesLimit > 0) {
+    branchName = branchName.substring(0, branchName.length() - aboveKubernetesLimit)
+    namespace = "${nxK8s.getCurrentNamespace()}-nev-${branchName}-preview".replaceAll('\\.', '-').toLowerCase()
+  }
+  return namespace
 }
 
 String getVersionFromLatestTag(repository) {
