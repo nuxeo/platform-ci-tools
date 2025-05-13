@@ -23,7 +23,7 @@ import hudson.model.Result
 library identifier: "platform-ci-shared-library@v0.0.55"
 
 // package list to use when exporting a build version of Nuxeo Platform
-DEFAULT_PACKAGE_LIST = [
+def DEFAULT_PACKAGE_LIST = [
   'easyshare',
   'nuxeo-csv',
   'nuxeo-drive',
@@ -38,7 +38,7 @@ DEFAULT_PACKAGE_LIST = [
   'nuxeo-platform-3d',
 ]
 // package list to append to the default one when exporting a promoted version of Nuxeo Platform
-ADDITIONAL_PACKAGE_LIST = [
+def ADDITIONAL_PACKAGE_LIST = [
   'cas2-authentication',
   'nuxeo-diff',
   'nuxeo-platform-user-registration',
@@ -80,11 +80,11 @@ pipeline {
 
     NUXEO_VERSION = retrieveNuxeoVersion()
 
-    EXPLORER_CONNECT_CLID_ID = 'instance-clid'
-    EXPLORER_CONNECT_URL = "${CONNECT_PROD_SITE_URL}"
+    EXPLORER_CONNECT_CLID_ID = "${!nxUtils.isDryRun() ? 'instance-clid' : 'instance-clid-preprod'}"
+    EXPLORER_CONNECT_URL = "${!nxUtils.isDryRun() ? env.CONNECT_PROD_SITE_URL : env.CONNECT_PREPROD_SITE_URL}"
 
     EXPORT_PACKAGE_CONNECT_CLID_ID = "${isNuxeoPromoted(env.NUXEO_VERSION) ? 'instance-clid': 'instance-clid-preprod'}"
-    EXPORT_PACKAGE_CONNECT_URL = "${isNuxeoPromoted(env.NUXEO_VERSION) ? CONNECT_PROD_SITE_URL : CONNECT_PREPROD_SITE_URL}"
+    EXPORT_PACKAGE_CONNECT_URL = "${isNuxeoPromoted(env.NUXEO_VERSION) ? env.CONNECT_PROD_SITE_URL : env.CONNECT_PREPROD_SITE_URL}"
     EXPORT_PACKAGE_LIST = "${DEFAULT_PACKAGE_LIST.join('+')}${isNuxeoPromoted(env.NUXEO_VERSION) ? '+' + ADDITIONAL_PACKAGE_LIST.join('+') : ''}".trim()
     EXPORT_SNAPSHOT_NAME = "Nuxeo Platform"
 
@@ -118,7 +118,7 @@ pipeline {
 
           Upload URL:                    '${UPLOAD_URL}'
           ----------------------------------------
-          """
+          """.stripIndent()
           if (env.NUXEO_VERSION.isEmpty()) {
             error('NUXEO_VERSION parameter is required')
           }
@@ -160,7 +160,7 @@ pipeline {
           echo """
           ----------------------------------------
           Deploy Explorer export environment
-          ----------------------------------------"""
+          ----------------------------------------""".stripIndent()
           nxWithHelmfileDeployment(file: 'Jenkinsfiles/explorer/export.d/helm/helmfile.yaml', secrets: [[name: 'instance-clid', namespace: 'platform']]) {
             script {
               sh "mkdir -p target"
@@ -199,13 +199,29 @@ pipeline {
       steps {
         container('base') {
           script {
-            echo """
-            ----------------------------------------
-            Upload Export to ${UPLOAD_URL}
-            ----------------------------------------"""
-            def aliases = isNuxeoPromoted(env.NUXEO_VERSION) ? 'latest' : "next\n${nxUtils.getMajorDotMinorVersion(version: env.NUXEO_VERSION)}.x"
-            nxUtils.postForm(credentialsId: env.UPLOAD_CREDS_ID, url: "${UPLOAD_URL}/site/distribution/uploadDistrib",
-                form: ['snap=@target/export.zip', "\$'nxdistribution:aliases=${aliases}'"])
+            if (!nxUtils.isDryRun()) {
+              echo """
+              ----------------------------------------
+              Upload Export to ${UPLOAD_URL}
+              ----------------------------------------""".stripIndent()
+              def aliases = isNuxeoPromoted(env.NUXEO_VERSION) ? 'latest' : "next\n${nxUtils.getMajorDotMinorVersion(version: env.NUXEO_VERSION)}.x"
+              nxUtils.postForm(credentialsId: env.UPLOAD_CREDS_ID, url: "${UPLOAD_URL}/site/distribution/uploadDistrib",
+                  form: ['snap=@target/export.zip', "\$'nxdistribution:aliases=${aliases}'"])
+            } else {
+              echo """
+              ----------------------------------------
+              Deploy Explorer import environment
+              ----------------------------------------""".stripIndent()
+              nxWithHelmfileDeployment(file: 'Jenkinsfiles/explorer/export.d/helm/helmfile.yaml', secrets: [[name: 'instance-clid', namespace: 'platform']]) {
+                String nuxeoUrl = "nuxeo.${NAMESPACE}.svc.cluster.local/nuxeo"
+                String explorerUrl = "${nuxeoUrl}/site/distribution"
+                echo """
+                ----------------------------------------
+                Upload Export to ${nuxeoUrl}
+                ----------------------------------------""".stripIndent()
+                sh "curl --fail -F snap=@target/export.zip -F \$'nxdistribution:aliases=${nxUtils.getMajorDotMinorVersion(version: env.NUXEO_VERSION)}.x' --user Administrator:Administrator ${nuxeoUrl}/site/distribution/uploadDistrib"
+              }
+            }
           }
         }
       }
