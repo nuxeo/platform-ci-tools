@@ -26,7 +26,7 @@ customEnvs:
       key: instance.clid
 customProperties:
   templates-override: |
-    # NXP-29494: override templates to avoid activating s3
+    # disable installed package templates to control the deployment
     nuxeo.templates=default
 tolerations:
 - effect: NoSchedule
