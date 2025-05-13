@@ -18,7 +18,9 @@
  */
 import java.time.LocalDate
 
-library identifier: "platform-ci-shared-library@v0.0.38"
+import hudson.model.Result
+
+library identifier: "platform-ci-shared-library@v0.0.55"
 
 GITHUB_URL = 'https://github.com'
 NUXEO_ORGANIZATION = 'nuxeo'
@@ -94,20 +96,23 @@ pipeline {
   post {
     always {
       script {
+        nxUtils.setBuildDescription()
         nxJira.updateIssues()
-      }
-    }
-    success {
-      script {
-        if (!hudson.model.Result.SUCCESS.toString().equals(currentBuild.getPreviousBuild()?.getResult())) {
-          nxSlack.success(message: "Successfully mirrored ${NUXEO_LTS_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} to ${NUXEO_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} ${BUILD_URL}")
-        }
-      }
-    }
-    unsuccessful {
-      script {
-        if (![hudson.model.Result.ABORTED.toString(), hudson.model.Result.NOT_BUILT.toString()].contains(currentBuild.result)) {
-          nxSlack.error(message: "Failed to mirror ${NUXEO_LTS_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} to ${NUXEO_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} ${BUILD_URL}")
+        if (!utils.isPullRequest() || utils.isDryRun()) {
+          def currentResult = Result.fromString(currentBuild.result)
+          if ((currentResult == Result.SUCCESS || currentResult == Result.UNSTABLE)
+              && utils.previousBuildStatusIs(status: Result.FAILURE, ignoredStatuses: [Result.ABORTED, Result.NOT_BUILT])) {
+            nxTeams.success(
+                message: "Successfully mirrored ${NUXEO_LTS_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} to ${NUXEO_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH}",
+                changes: true,
+            )
+          } else if (currentResult == Result.FAILURE) {
+            nxTeams.error(
+                message: "Failed to mirror ${NUXEO_LTS_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} to ${NUXEO_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH}",
+                changes: true,
+                culprits: true,
+            )
+          }
         }
       }
     }
