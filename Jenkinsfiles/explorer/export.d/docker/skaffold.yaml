@@ -13,35 +13,15 @@ build:
   artifacts:
     - image: "$DOCKER_REGISTRY/nuxeo/nuxeo-explorer-export"
       context: Jenkinsfiles/explorer/export.d/docker
-      kaniko:
-        useNewRun: true
-        singleSnapshot: true
-        snapshot-mode: "time"
-        buildArgs:
-          NUXEO_VERSION: "{{.NUXEO_VERSION}}"
-          BUILD_TAG: "{{.BUILD_TAG}}"
-          SCM_REF: "{{.GIT_COMMIT}}"
-          VERSION: "{{.VERSION}}"
-          EXPLORER_CONNECT_CLID: "{{.EXPLORER_CONNECT_CLID}}"
-          EXPLORER_CONNECT_URL: "{{.EXPLORER_CONNECT_URL}}"
-          EXPORT_PACKAGE_CONNECT_CLID: "{{.EXPORT_PACKAGE_CONNECT_CLID}}"
-          EXPORT_PACKAGE_CONNECT_URL: "{{.EXPORT_PACKAGE_CONNECT_URL}}"
-          EXPORT_PACKAGE_LIST: "{{.EXPORT_PACKAGE_LIST}}"
-  cluster:
-    namespace: $CURRENT_NAMESPACE
-    dockerConfig:
-      secretName: jenkins-docker-cfg
-    resources:
-      requests:
-        cpu: "1"
-        memory: "3Gi"
-      limits:
-        cpu: "2"
-        memory: "6Gi"
-    nodeSelector:
-      team: platform
-    tolerations:
-      - key: team
-        operator: "Equal"
-        value: platform
-        effect: "NoSchedule"
+      custom:
+        buildCommand: |
+          docker-buildx \
+            --build-arg NUXEO_VERSION={{.NUXEO_VERSION}} \
+            --build-arg BUILD_TAG={{.BUILD_TAG}} \
+            --build-arg SCM_REF={{.GIT_COMMIT}} \
+            --build-arg VERSION={{.VERSION}} \
+            --secret id=EXPLORER_CONNECT_CLID,env=EXPLORER_CONNECT_CLID \
+            --build-arg EXPLORER_CONNECT_URL={{.EXPLORER_CONNECT_URL}} \
+            --secret id=EXPORT_PACKAGE_CONNECT_CLID,env=EXPORT_PACKAGE_CONNECT_CLID \
+            --build-arg EXPORT_PACKAGE_CONNECT_URL={{.EXPORT_PACKAGE_CONNECT_URL}} \
+            --build-arg EXPORT_PACKAGE_LIST={{.EXPORT_PACKAGE_LIST}} \

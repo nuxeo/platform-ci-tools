@@ -85,7 +85,7 @@ pipeline {
 
     EXPORT_PACKAGE_CONNECT_CLID_ID = "${isNuxeoPromoted(env.NUXEO_VERSION) ? 'instance-clid': 'instance-clid-preprod'}"
     EXPORT_PACKAGE_CONNECT_URL = "${isNuxeoPromoted(env.NUXEO_VERSION) ? CONNECT_PROD_SITE_URL : CONNECT_PREPROD_SITE_URL}"
-    EXPORT_PACKAGE_LIST = "${DEFAULT_PACKAGE_LIST.join(' ')} ${isNuxeoPromoted(env.NUXEO_VERSION) ? ADDITIONAL_PACKAGE_LIST.join(' ') : ''}".trim()
+    EXPORT_PACKAGE_LIST = "${DEFAULT_PACKAGE_LIST.join('+')}${isNuxeoPromoted(env.NUXEO_VERSION) ? '+' + ADDITIONAL_PACKAGE_LIST.join('+') : ''}".trim()
     EXPORT_SNAPSHOT_NAME = "Nuxeo Platform"
 
     VERSION = "${NUXEO_VERSION}-latest"
