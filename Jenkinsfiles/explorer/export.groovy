@@ -22,36 +22,6 @@ import hudson.model.Result
 
 library identifier: "platform-ci-shared-library@v0.0.55"
 
-// package list to use when exporting a build version of Nuxeo Platform
-def DEFAULT_PACKAGE_LIST = [
-  'easyshare',
-  'nuxeo-csv',
-  'nuxeo-drive',
-  'nuxeo-imap-connector',
-  'nuxeo-multi-tenant',
-  'nuxeo-platform-importer',
-  'nuxeo-quota',
-  'nuxeo-signature',
-  'nuxeo-template-rendering',
-  'shibboleth-authentication',
-  'nuxeo-liveconnect',
-  'nuxeo-platform-3d',
-]
-// package list to append to the default one when exporting a promoted version of Nuxeo Platform
-def ADDITIONAL_PACKAGE_LIST = [
-  'cas2-authentication',
-  'nuxeo-diff',
-  'nuxeo-platform-user-registration',
-  'nuxeo-virtualnavigation',
-  'nuxeo-web-ui',
-  'nuxeo-jsf-ui',
-  'nuxeo-arender',
-  'nuxeo-aspera',
-  'nuxeo-coldstorage',
-  'nuxeo-retention',
-  'nuxeo-salesforce',
-]
-
 String retrieveNuxeoVersion() {
   container('base') {
     for (def runWrapper : currentBuild.upstreamBuilds) {
@@ -85,7 +55,7 @@ pipeline {
 
     EXPORT_PACKAGE_CONNECT_CLID_ID = "${isNuxeoPromoted(env.NUXEO_VERSION) ? 'instance-clid': 'instance-clid-preprod'}"
     EXPORT_PACKAGE_CONNECT_URL = "${isNuxeoPromoted(env.NUXEO_VERSION) ? env.CONNECT_PROD_SITE_URL : env.CONNECT_PREPROD_SITE_URL}"
-    EXPORT_PACKAGE_LIST = "${DEFAULT_PACKAGE_LIST.join('+')}${isNuxeoPromoted(env.NUXEO_VERSION) ? '+' + ADDITIONAL_PACKAGE_LIST.join('+') : ''}".trim()
+    EXPORT_PACKAGE_LIST = "${params.EXPORT_PACKAGE_LIST.replaceAll('\n\\s*', '+')}".trim()
     EXPORT_SNAPSHOT_NAME = "Nuxeo Platform"
 
     VERSION = "${NUXEO_VERSION}-latest"
