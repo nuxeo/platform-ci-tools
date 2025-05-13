@@ -16,7 +16,7 @@
  * Contributors:
  *     Anahide Tchertchian
  */
-library identifier: "platform-ci-shared-library@v0.0.26"
+library identifier: "platform-ci-shared-library@v0.0.55"
 
 /**
 * Script cleaning up exports on target explorer site.
@@ -103,11 +103,23 @@ pipeline {
     }
   }
   post {
-    unsuccessful {
+    always {
       script {
-        // TODO NXP-32209
         if (!isExplorerBeta(params.TARGET_URL)) {
-          nxSlack.error(message: "Failed to cleanup old exports on ${params.TARGET_URL}: <${BUILD_URL}|#${BUILD_NUMBER}>")
+          def currentResult = Result.fromString(currentBuild.result)
+          if ((currentResult == Result.SUCCESS || currentResult == Result.UNSTABLE)
+              && utils.previousBuildStatusIs(status: Result.FAILURE, ignoredStatuses: [Result.ABORTED, Result.NOT_BUILT])) {
+            nxTeams.success(
+                message: "Successfully cleaned up old exports on ${params.TARGET_URL}",
+                changes: true,
+            )
+          } else if (currentResult == Result.FAILURE) {
+            nxTeams.error(
+                message: "Failed to cleanup old exports on ${params.TARGET_URL}",
+                changes: true,
+                culprits: true,
+            )
+          }
         }
       }
     }

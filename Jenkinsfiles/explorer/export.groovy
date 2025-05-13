@@ -18,7 +18,9 @@
  *     Kevin Leturc <kleturc@nuxeo.com>
  *     Anahide Tchertchian
  */
-library identifier: "platform-ci-shared-library@v0.0.39"
+import hudson.model.Result
+
+library identifier: "platform-ci-shared-library@v0.0.55"
 
 // package list to use when exporting a build version of Nuxeo Platform
 DEFAULT_PACKAGE_LIST = [
@@ -210,18 +212,24 @@ pipeline {
     }
   }
   post {
-    success {
+    always {
       script {
-        if (!hudson.model.Result.SUCCESS.toString().equals(currentBuild.getPreviousBuild()?.getResult())) {
-          nxSlack.success(message: "Successfully <${BUILD_URL}|uploaded> nuxeo-explorer reference export for ${NUXEO_VERSION} :robot_face:")
-        }
-      }
-    }
-    unsuccessful {
-      script {
-        // TODO NXP-32209
-        if (isNuxeoPromoted(NUXEO_VERSION)) {
-          nxSlack.error(message: "Failed to <${BUILD_URL}|upload> nuxeo-explorer reference export for ${NUXEO_VERSION}")
+        nxJira.updateIssues()
+        if (isNuxeoPromoted(env.NUXEO_VERSION)) {
+          def currentResult = Result.fromString(currentBuild.result)
+          if ((currentResult == Result.SUCCESS || currentResult == Result.UNSTABLE)
+              && utils.previousBuildStatusIs(status: Result.FAILURE, ignoredStatuses: [Result.ABORTED, Result.NOT_BUILT])) {
+            nxTeams.success(
+                message: "Successfully uploaded nuxeo-explorer reference export for ${NUXEO_VERSION}",
+                changes: true,
+            )
+          } else if (currentResult == Result.FAILURE) {
+            nxTeams.error(
+                message: "Failed to upload nuxeo-explorer reference export for ${NUXEO_VERSION}",
+                changes: true,
+                culprits: true,
+            )
+          }
         }
       }
     }
