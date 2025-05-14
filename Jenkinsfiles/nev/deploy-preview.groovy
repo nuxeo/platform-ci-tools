@@ -39,8 +39,10 @@ String getPreviewNamespace(branchName) {
   branchName = branchName ?: 'main'
   def namespace = "${nxK8s.getCurrentNamespace()}-nev-${branchName}-preview".replaceAll('\\.', '-').toLowerCase()
   def aboveKubernetesLimit = namespace.length() - 63
-  if (aboveKubernetesLimit > 0) {
-    branchName = branchName.substring(0, branchName.length() - aboveKubernetesLimit)
+  // ingress host also has the 63 limit per segment, add back the 'nuxeo-' length part
+  def aboveIngressLimit = aboveKubernetesLimit + 6
+  if (aboveIngressLimit > 0) {
+    branchName = branchName.substring(0, branchName.length() - aboveIngressLimit)
     namespace = "${nxK8s.getCurrentNamespace()}-nev-${branchName}-preview".replaceAll('\\.', '-').toLowerCase()
   }
   return namespace
