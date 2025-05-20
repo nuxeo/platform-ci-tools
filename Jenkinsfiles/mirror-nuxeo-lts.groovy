@@ -20,7 +20,7 @@ import java.time.LocalDate
 
 import hudson.model.Result
 
-library identifier: "platform-ci-shared-library@v0.0.55"
+library identifier: "platform-ci-shared-library@v0.0.64"
 
 GITHUB_URL = 'https://github.com'
 NUXEO_ORGANIZATION = 'nuxeo'
@@ -98,10 +98,10 @@ pipeline {
       script {
         nxUtils.setBuildDescription()
         nxJira.updateIssues()
-        if (!utils.isPullRequest() || utils.isDryRun()) {
+        if (!nxUtils.isPullRequest() || nxUtils.isDryRun()) {
           def currentResult = Result.fromString(currentBuild.result)
           if ((currentResult == Result.SUCCESS || currentResult == Result.UNSTABLE)
-              && utils.previousBuildStatusIs(status: Result.FAILURE, ignoredStatuses: [Result.ABORTED, Result.NOT_BUILT])) {
+              && nxUtils.previousBuildStatusIs(status: Result.FAILURE, ignoredStatuses: [Result.ABORTED, Result.NOT_BUILT])) {
             nxTeams.success(
                 message: "Successfully mirrored ${NUXEO_LTS_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH} to ${NUXEO_REPOSITORY_URL}/tree/${NUXEO_LTS_BRANCH}",
                 changes: true,
