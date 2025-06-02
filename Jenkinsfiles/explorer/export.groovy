@@ -20,7 +20,7 @@
  */
 import hudson.model.Result
 
-library identifier: "platform-ci-shared-library@v0.0.55"
+library identifier: "platform-ci-shared-library@v0.0.67"
 
 String retrieveNuxeoVersion() {
   container('base') {
@@ -202,20 +202,17 @@ pipeline {
       script {
         nxJira.updateIssues()
         if (isNuxeoPromoted(env.NUXEO_VERSION)) {
-          def currentResult = Result.fromString(currentBuild.result)
-          if ((currentResult == Result.SUCCESS || currentResult == Result.UNSTABLE)
-              && utils.previousBuildStatusIs(status: Result.FAILURE, ignoredStatuses: [Result.ABORTED, Result.NOT_BUILT])) {
+          nxUtils.callIfBuildRecoverOrFail({
             nxTeams.success(
-                message: "Successfully uploaded nuxeo-explorer reference export for ${NUXEO_VERSION}",
-                changes: true,
-            )
-          } else if (currentResult == Result.FAILURE) {
+              message: "Successfully uploaded nuxeo-explorer reference export for ${NUXEO_VERSION}",
+              changes: true,
+            )}, {
             nxTeams.error(
-                message: "Failed to upload nuxeo-explorer reference export for ${NUXEO_VERSION}",
-                changes: true,
-                culprits: true,
-            )
-          }
+              message: "Failed to upload nuxeo-explorer reference export for ${NUXEO_VERSION}",
+              changes: true,
+              culprits: true,
+            )}
+          )
         }
       }
     }

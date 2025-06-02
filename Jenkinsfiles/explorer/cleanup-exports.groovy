@@ -16,7 +16,7 @@
  * Contributors:
  *     Anahide Tchertchian
  */
-library identifier: "platform-ci-shared-library@v0.0.55"
+library identifier: "platform-ci-shared-library@v0.0.67"
 
 /**
 * Script cleaning up exports on target explorer site.
@@ -106,20 +106,17 @@ pipeline {
     always {
       script {
         if (!isExplorerBeta(params.TARGET_URL)) {
-          def currentResult = Result.fromString(currentBuild.result)
-          if ((currentResult == Result.SUCCESS || currentResult == Result.UNSTABLE)
-              && utils.previousBuildStatusIs(status: Result.FAILURE, ignoredStatuses: [Result.ABORTED, Result.NOT_BUILT])) {
+          nxUtils.callIfBuildRecoverOrFail({
             nxTeams.success(
-                message: "Successfully cleaned up old exports on ${params.TARGET_URL}",
-                changes: true,
-            )
-          } else if (currentResult == Result.FAILURE) {
+              message: "Successfully cleaned up old exports on ${params.TARGET_URL}",
+              changes: true,
+            )}, {
             nxTeams.error(
-                message: "Failed to cleanup old exports on ${params.TARGET_URL}",
-                changes: true,
-                culprits: true,
-            )
-          }
+              message: "Failed to cleanup old exports on ${params.TARGET_URL}",
+              changes: true,
+              culprits: true,
+            )}
+          )
         }
       }
     }
