@@ -16,7 +16,7 @@
  * Contributors:
  *     Antoine Taillefer <antoine.taillefer@hyland.com>
  */
-library identifier: "platform-ci-shared-library@v0.0.42"
+library identifier: "platform-ci-shared-library@v0.0.68"
 
 String getLatestPackageVersion(name, ltsVersion) {
   withCredentials([usernameColonPassword(credentialsId: 'connect-prod', variable: 'CONNECT_AUTH')]) {
