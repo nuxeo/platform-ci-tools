@@ -68,11 +68,11 @@ boolean isPRVersion(version) {
 
 String getMarkdownVersions() {
   return """
-- NEV Helm chart: `${NEV_CHART_VERSION}`
-- ARender Nuxeo: `${ARENDER_NUXEO_VERSION}`
-- Nuxeo Helm chart: `${NUXEO_CHART_VERSION}`
-- Nuxeo: `${NUXEO_VERSION}`
-- Nuxeo ARender connector: `${NUXEO_ARENDER_CONNECTOR_VERSION}`
+- NEV Helm chart: `${env.NEV_CHART_VERSION}`
+- ARender Nuxeo: `${env.ARENDER_NUXEO_VERSION}`
+- Nuxeo Helm chart: `${env.NUXEO_CHART_VERSION}`
+- Nuxeo: `${env.NUXEO_VERSION}`
+- Nuxeo ARender connector: `${env.NUXEO_ARENDER_CONNECTOR_VERSION}`
 """
 }
 
