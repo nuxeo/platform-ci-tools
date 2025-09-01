@@ -12,7 +12,12 @@ service:
     {{ tpl (readFile "labels.yaml.gotmpl") . | nindent 4 }}
     dev.nuxeo.com/app: nuxeo
     dev.nuxeo.com/resource: service
-packages: nuxeo-arender-{{ requiredEnv "NUXEO_ARENDER_CONNECTOR_VERSION" }} nuxeo-web-ui nuxeo-showcase-content
+packages: >-
+  {{- if eq (env "NUXEO_IMAGE") "nuxeo/nuxeo" }}
+  nuxeo-arender-{{ requiredEnv "NUXEO_ARENDER_CONNECTOR_VERSION" }}
+  nuxeo-web-ui
+  {{- end }}
+  nuxeo-showcase-content
 customEnvs:
   - name: NUXEO_CLID
     valueFrom:
