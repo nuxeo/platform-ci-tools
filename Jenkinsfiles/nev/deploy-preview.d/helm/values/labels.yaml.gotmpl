@@ -1,6 +1,0 @@
-dev.nuxeo.com/base_branch: {{ env "GIT_BRANCH" | replace "origin/" "" | lower | default "local" | quote }}
-dev.nuxeo.com/branch: {{ env "GIT_BRANCH" | replace "origin/" "" | lower | default "local" | quote }}
-dev.nuxeo.com/initiator: {{ eq (env "DRY_RUN") "true" | ternary "jenkins-platform-staging" "jenkins-platform" }}
-dev.nuxeo.com/repository: platform-ci-tools
-dev.nuxeo.com/team: platform
-dev.nuxeo.com/usage: preview

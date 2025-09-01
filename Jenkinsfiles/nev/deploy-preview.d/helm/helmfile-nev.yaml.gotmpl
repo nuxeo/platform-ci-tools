@@ -1,0 +1,16 @@
+repositories:
+- name: nev
+  url: {{ requiredEnv "NEV_CHART_REPO" }}
+  username: {{ requiredEnv "NEV_CHART_REPO_USERNAME" }}
+  password: {{ requiredEnv "NEV_CHART_REPO_PASSWORD" }}
+
+helmDefaults:
+  timeout: 600
+  wait: true
+
+releases:
+- name: nev
+  chart: nev/nuxeo-enhanced-viewer
+  version: {{ requiredEnv "NEV_CHART_VERSION" | quote }}
+  values:
+  - values/values-nev.yaml.gotmpl

@@ -16,7 +16,7 @@
  * Contributors:
  *     Antoine Taillefer <antoine.taillefer@hyland.com>
  */
-library identifier: "platform-ci-shared-library@v0.0.69"
+library identifier: "platform-ci-shared-library@v0.0.71"
 
 String getLatestPackageVersion(name, ltsVersion) {
   withCredentials([usernameColonPassword(credentialsId: 'connect-prod', variable: 'CONNECT_AUTH')]) {
@@ -70,8 +70,7 @@ String getMarkdownVersions() {
   return """
 - NEV Helm chart: `${env.NEV_CHART_VERSION}`
 - ARender Nuxeo: `${env.ARENDER_NUXEO_VERSION}`
-- Nuxeo Helm chart: `${env.NUXEO_CHART_VERSION}`
-- Nuxeo: `${env.NUXEO_VERSION}`
+- Nuxeo: `${env.NUXEO_IMAGE}:${env.NUXEO_IMAGE_VERSION} / (${env.NUXEO_PLATFORM_VERSION})`
 - Nuxeo ARender connector: `${env.NUXEO_ARENDER_CONNECTOR_VERSION}`
 """
 }
@@ -81,7 +80,6 @@ pipeline {
     label "jenkins-base"
   }
   environment {
-    NUXEO_CHART_VERSION = '~3.1.8'
     NUXEO_DEFAULT_VERSION = '2023'
     PREVIEW_NAMESPACE = getPreviewNamespace(params.BRANCH_NAME)
     VERSIONING_CONFIGMAP = 'nev-preview'
@@ -144,15 +142,17 @@ pipeline {
             if (isPRVersion(NUXEO_ARENDER_CONNECTOR_VERSION)) {
               env.NUXEO_REGISTRY = DOCKER_REGISTRY
               env.NUXEO_IMAGE = 'nuxeo/nuxeo-arender-connector'
-              env.NUXEO_VERSION = NUXEO_ARENDER_CONNECTOR_VERSION
+              env.NUXEO_IMAGE_VERSION = NUXEO_ARENDER_CONNECTOR_VERSION
             } else {
               env.NUXEO_REGISTRY = PRIVATE_DOCKER_REGISTRY
               env.NUXEO_IMAGE = 'nuxeo/nuxeo'
-              env.NUXEO_VERSION = nxUtils.getMajorVersion(version: NUXEO_ARENDER_CONNECTOR_VERSION)
+              env.NUXEO_IMAGE_VERSION = nxUtils.getMajorVersion(version: NUXEO_ARENDER_CONNECTOR_VERSION)
             }
+            env.NUXEO_PLATFORM_VERSION = nxDocker.getLabel(image: "${NUXEO_REGISTRY}/${NUXEO_IMAGE}:${NUXEO_IMAGE_VERSION}", label: 'org.nuxeo.version')
             echo "NUXEO_REGISTRY = ${NUXEO_REGISTRY}"
             echo "NUXEO_IMAGE = ${NUXEO_IMAGE}"
-            echo "NUXEO_VERSION = ${NUXEO_VERSION}"
+            echo "NUXEO_IMAGE_VERSION = ${NUXEO_IMAGE_VERSION}"
+            echo "NUXEO_PLATFORM_VERSION = ${NUXEO_PLATFORM_VERSION}"
           }
         }
       }
@@ -167,13 +167,16 @@ pipeline {
               Deploy NEV preview:
               - NEV Helm chart: ${NEV_CHART_VERSION}
               - ARender Nuxeo: ${ARENDER_NUXEO_VERSION}
-              - Nuxeo Helm chart: ${NUXEO_CHART_VERSION}
-              - Nuxeo: ${NUXEO_VERSION}
+              - Nuxeo: ${NUXEO_IMAGE}:${NUXEO_IMAGE_VERSION} / (${NUXEO_PLATFORM_VERSION})
               - Nuxeo ARender connector: ${NUXEO_ARENDER_CONNECTOR_VERSION}
               ----------------------------------------"""
               def packagesUsername = nxK8s.getSecretData(namespace: 'platform', name: 'packages.nuxeo.com-auth', key: 'username')
               def packagesPassword = nxK8s.getSecretData(namespace: 'platform', name: 'packages.nuxeo.com-auth', key: 'password')
-              def envVars = ["NEV_CHART_REPO_USERNAME=${packagesUsername}","NEV_CHART_REPO_PASSWORD=${packagesPassword}"]
+              def envVars = [
+                "NEV_CHART_REPO_USERNAME=${packagesUsername}",
+                "NEV_CHART_REPO_PASSWORD=${packagesPassword}",
+                "VERSION=dummy_because_use_in_nuxeo-lts"
+              ]
               def helmfile = 'Jenkinsfiles/nev/deploy-preview.d/helm/helmfile.yaml.gotmpl'
               nxHelmfile.template(
                 file: helmfile,
