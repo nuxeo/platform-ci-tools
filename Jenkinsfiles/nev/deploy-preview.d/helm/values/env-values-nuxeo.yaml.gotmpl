@@ -1,0 +1,35 @@
+nuxeo:
+  image:
+    repository: {{ requiredEnv "NUXEO_REGISTRY" }}/{{ requiredEnv "NUXEO_IMAGE" }}
+    tag: {{ requiredEnv "NUXEO_IMAGE_VERSION" | quote }}
+  packages: >-
+    {{- if eq (env "NUXEO_IMAGE") "nuxeo/nuxeo" }}
+    nuxeo-arender-{{ requiredEnv "NUXEO_ARENDER_CONNECTOR_VERSION" }}
+    nuxeo-web-ui
+    {{- end }}
+    nuxeo-showcase-content
+  customEnvs:
+    - name: NUXEO_CLID
+      valueFrom:
+        secretKeyRef:
+          name: "instance-clid"
+          key: instance.clid
+    - name: JAVA_OPTS
+      value: -Djdk.util.zip.disableZip64ExtraFieldValidation=true
+  customProperties:
+    nev: |
+      arender.server.previewer.host=https://nev-{{ requiredEnv "NAMESPACE" }}.platform.dev.nuxeo.com
+      nuxeo.arender.oauth2.client.create=true
+      nuxeo.arender.oauth2.client.id=arender
+      nuxeo.arender.oauth2.client.secret=dummySecret
+      nuxeo.arender.oauth2.client.redirectURI=/login/oauth2/code/nuxeo
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/server-snippet: ignore_invalid_headers off;
+    hostname: nuxeo-{{ requiredEnv "NAMESPACE" }}.platform.dev.nuxeo.com
+    tls:
+    - hosts:
+      - nuxeo-{{ requiredEnv "NAMESPACE" }}.platform.dev.nuxeo.com
+      secretName: platform-tls

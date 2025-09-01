@@ -1,24 +1,16 @@
-repositories:
-  - name: nev
-    url: {{ requiredEnv "NEV_CHART_REPO" }}
-    username: {{ requiredEnv "NEV_CHART_REPO_USERNAME" }}
-    password: {{ requiredEnv "NEV_CHART_REPO_PASSWORD" }}
-  - name: nuxeo
-    url: https://packages.nuxeo.com/repository/helm-releases-public/
-
-helmDefaults:
-  timeout: 300
-  wait: true
-
-releases:
-  - name: nev
-    chart: nev/nuxeo-enhanced-viewer
-    version: {{ requiredEnv "NEV_CHART_VERSION" | quote }}
+environments:
+  default:
     values:
-      - values/values-nev.yaml.gotmpl
-      - values/values-nev-tolerations.yaml.gotmpl
-  - name: nuxeo
-    chart: nuxeo/nuxeo
-    version: {{ requiredEnv "NUXEO_CHART_VERSION" | quote }}
-    values:
-      - values/values-nuxeo.yaml.gotmpl
+    - environments/default.yaml
+values: # values for all environments and helmfiles
+- git::https://{{ requiredEnv "GITHUB_USER" }}:{{ requiredEnv "GITHUB_PASSWORD" }}@github.com/nuxeo/nuxeo-lts.git@ci/helm/apps/base/values/env-values-global.yaml.gotmpl?ref=v{{ requiredEnv "NUXEO_PLATFORM_VERSION" }}&depth=1
+- values/env-values-global.yaml
+- values/env-values-nuxeo.yaml.gotmpl
+---
+helmfiles:
+- path: helmfile-nev.yaml.gotmpl
+  values:
+  - {{ toYaml .Values | nindent 4 }}
+- path: git::https://{{ requiredEnv "GITHUB_USER" }}:{{ requiredEnv "GITHUB_PASSWORD" }}@github.com/nuxeo/nuxeo-lts.git@ci/helm/apps/helmfile-base.yaml.gotmpl?ref=v{{ requiredEnv "NUXEO_PLATFORM_VERSION" }}&depth=1
+  values:
+  - {{ toYaml .Values | nindent 4 }}

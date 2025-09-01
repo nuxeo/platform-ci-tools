@@ -1,0 +1,16 @@
+# these values are required by helmfile-base.yaml.gotmpl releases
+nuxeo:
+  enabled: true
+mongodb:
+  enabled: false
+postgresql:
+  enabled: false
+opensearch:
+  enabled: false
+kafka:
+  enabled: false
+
+# values definition
+global:
+  labels:
+    dev.nuxeo.com/usage: explorer-export

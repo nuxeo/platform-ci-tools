@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2023 Nuxeo (http://nuxeo.com/) and others.
+ * (C) Copyright 2023-2025 Nuxeo (http://nuxeo.com/) and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
  */
 import hudson.model.Result
 
-library identifier: "platform-ci-shared-library@v0.0.67"
+library identifier: "platform-ci-shared-library@v0.0.71"
 
 String retrieveNuxeoVersion() {
   container('base') {
