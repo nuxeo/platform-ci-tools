@@ -174,7 +174,7 @@ pipeline {
               def packagesUsername = nxK8s.getSecretData(namespace: 'platform', name: 'packages.nuxeo.com-auth', key: 'username')
               def packagesPassword = nxK8s.getSecretData(namespace: 'platform', name: 'packages.nuxeo.com-auth', key: 'password')
               def envVars = ["NEV_CHART_REPO_USERNAME=${packagesUsername}","NEV_CHART_REPO_PASSWORD=${packagesPassword}"]
-              def helmfile = 'Jenkinsfiles/nev/deploy-preview.d/helm/helmfile.yaml'
+              def helmfile = 'Jenkinsfiles/nev/deploy-preview.d/helm/helmfile.yaml.gotmpl'
               nxHelmfile.template(
                 file: helmfile,
                 namespace: PREVIEW_NAMESPACE,
