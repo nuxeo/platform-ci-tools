@@ -25,11 +25,4 @@ nuxeo:
       nuxeo.arender.oauth2.client.redirectURI=/login/oauth2/code/nuxeo
   ingress:
     enabled: true
-    annotations:
-      nginx.ingress.kubernetes.io/proxy-body-size: "0"
-      nginx.ingress.kubernetes.io/server-snippet: ignore_invalid_headers off;
     hostname: nuxeo-{{ requiredEnv "NAMESPACE" }}.platform.dev.nuxeo.com
-    tls:
-    - hosts:
-      - nuxeo-{{ requiredEnv "NAMESPACE" }}.platform.dev.nuxeo.com
-      secretName: platform-tls
