@@ -175,7 +175,6 @@ pipeline {
               def envVars = [
                 "NEV_CHART_REPO_USERNAME=${packagesUsername}",
                 "NEV_CHART_REPO_PASSWORD=${packagesPassword}",
-                "VERSION=dummy_because_use_in_nuxeo-lts"
               ]
               def helmfile = 'Jenkinsfiles/nev/deploy-preview.d/helm/helmfile.yaml.gotmpl'
               nxHelmfile.template(
