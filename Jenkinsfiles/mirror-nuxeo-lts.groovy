@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2022 Nuxeo (http://nuxeo.com/) and others.
+ * (C) Copyright 2022-2025 Nuxeo (http://nuxeo.com/) and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,15 @@ pipeline {
     timeout(time: 1, unit: 'HOURS')
   }
   stages {
+    stage('Set labels') {
+      steps {
+        container('base') {
+          script {
+            nxK8s.setPodLabels()
+          }
+        }
+      }
+    }
     stage('Mirror') {
       steps {
         container('base') {
