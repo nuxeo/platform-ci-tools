@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2023 Nuxeo (http://nuxeo.com/) and others.
+ * (C) Copyright 2023-2025 Nuxeo (http://nuxeo.com/) and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  * Contributors:
  *     Antoine Taillefer <ataillefer@nuxeo.com>
  */
-library identifier: "platform-ci-shared-library@v0.0.41"
+library identifier: "platform-ci-shared-library@v0.0.75"
 
 NAMESPACE_SUFFIX_PATTERN = '-preview'
 
@@ -25,6 +25,15 @@ pipeline {
     label 'jenkins-base'
   }
   stages {
+    stage('Set labels') {
+      steps {
+        container('base') {
+          script {
+            nxK8s.setPodLabels()
+          }
+        }
+      }
+    }
     stage('Delete previews') {
       steps {
         container('base') {

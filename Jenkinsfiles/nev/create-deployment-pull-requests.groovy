@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2023 Nuxeo (http://nuxeo.com/) and others.
+ * (C) Copyright 2023-2025 Nuxeo (http://nuxeo.com/) and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  * Contributors:
  *     Kevin Leturc <kleturc@nuxeo.com>
  */
-library identifier: "platform-ci-shared-library@v0.0.38"
+library identifier: "platform-ci-shared-library@v0.0.75"
 
 ARENDER_DEPLOYMENT = 'arender-deployment'
 ARENDER_DEPLOYMENT_BASE_BRANCH = 'main'
@@ -71,7 +71,7 @@ pipeline {
       steps {
         container('base') {
           script {
-            nxK8s.setPodLabels(team: 'connectors')
+            nxK8s.setPodLabels()
           }
         }
       }

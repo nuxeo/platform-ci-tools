@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2021 Nuxeo (http://nuxeo.com/) and others.
+ * (C) Copyright 2021-2025 Nuxeo (http://nuxeo.com/) and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  * Contributors:
  *     Kevin Leturc <kleturc@nuxeo.com>
  */
-library identifier: "platform-ci-shared-library@v0.0.11"
+library identifier: "platform-ci-shared-library@v0.0.75"
 
 pipeline {
   agent {
@@ -27,6 +27,15 @@ pipeline {
     LIBREOFFICE_TARBALL = "LibreOffice_${LIBREOFFICE_VERSION}_Linux_x86-64_rpm.tar.gz"
   }
   stages {
+    stage('Set labels') {
+      steps {
+        container('base') {
+          script {
+            nxK8s.setPodLabels()
+          }
+        }
+      }
+    }
     stage('Download and upload Libreoffice') {
       steps {
         container('base') {
