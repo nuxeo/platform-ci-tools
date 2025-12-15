@@ -100,7 +100,7 @@ pipeline {
               } else if (TARGET_ENVIRONMENT == "uat") {
                 def pullRequestURLs = []
                 // arender-deployment GitHub action expects to have only one environment change per commit to deploy it
-                for (def project : ['backend', 'nev-2019', 'nev-2021', 'nev-2023', 'nev-2025']) {
+                for (def project : ['backend', 'nev-2023', 'nev-2025']) {
                   def pullRequestURL = createDeploymentPullRequest(environment: TARGET_ENVIRONMENT, project: project)
                   pullRequestURLs.add(pullRequestURL)
                 }
