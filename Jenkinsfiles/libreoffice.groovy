@@ -24,7 +24,6 @@ pipeline {
   }
   environment {
     LIBREOFFICE_VERSION = "${params.LIBREOFFICE_VERSION}"
-    LIBREOFFICE_TARBALL = "LibreOffice_${LIBREOFFICE_VERSION}_Linux_x86-64_rpm.tar.gz"
   }
   stages {
     stage('Set labels') {
@@ -40,18 +39,24 @@ pipeline {
       steps {
         container('base') {
           script {
-            echo """
-            ------------------------------------------------
-            Download LibreOffice from documentfoundation.org
-            ------------------------------------------------"""
-            sh 'curl --fail -L https://download.documentfoundation.org/libreoffice/stable/$LIBREOFFICE_VERSION/rpm/x86_64/$LIBREOFFICE_TARBALL --output $LIBREOFFICE_TARBALL'
+            for (def platform : ['aarch64', 'x86-64']) {
+              echo """
+              ------------------------------------------------
+              Download LibreOffice from documentfoundation.org
+              Platform: ${platform}
+              Version: ${LIBREOFFICE_VERSION}
+              ------------------------------------------------""".stripIndent()
+              def tarball = "LibreOffice_${LIBREOFFICE_VERSION}_Linux_${platform}_rpm.tar.gz"
+              sh "curl --fail -L https://download.documentfoundation.org/libreoffice/stable/${LIBREOFFICE_VERSION}/rpm/${platform.replace('-', '_')}/${tarball} --output ${tarball}"
 
-            echo """
-            ------------------------------------------------
-            Upload LibreOffice to packages.nuxeo.com
-            ------------------------------------------------"""
-            nxUtils.uploadFile(credentialsId: 'packages.nuxeo.com-auth', file: env.LIBREOFFICE_TARBALL,
-                url: 'https://packages.nuxeo.com/repository/document-foundation-raw/')
+              echo """
+              ------------------------------------------------
+              Upload LibreOffice to packages.nuxeo.com
+              Tarball: ${tarball}
+              ------------------------------------------------""".stripIndent()
+              nxUtils.uploadFile(credentialsId: 'packages.nuxeo.com-auth', file: tarball,
+                  url: 'https://packages.nuxeo.com/repository/document-foundation-raw/')
+            }
           }
         }
       }
