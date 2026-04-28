@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2021-2025 Nuxeo (http://nuxeo.com/) and others.
+ * (C) Copyright 2021-2026 Nuxeo (http://nuxeo.com/) and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  * Contributors:
  *     Kevin Leturc <kleturc@nuxeo.com>
  */
-library identifier: "platform-ci-shared-library@v0.0.75"
+library identifier: "platform-ci-shared-library@v0.0.85"
 
 pipeline {
   agent {
@@ -36,19 +36,19 @@ pipeline {
         }
       }
     }
-    stage('Download and upload Libreoffice') {
+    stage('Download and upload LibreOffice') {
       steps {
         container('base') {
           script {
             echo """
             ------------------------------------------------
-            Download Libreoffice from documentfoundation.org
+            Download LibreOffice from documentfoundation.org
             ------------------------------------------------"""
             sh 'curl --fail -L https://download.documentfoundation.org/libreoffice/stable/$LIBREOFFICE_VERSION/rpm/x86_64/$LIBREOFFICE_TARBALL --output $LIBREOFFICE_TARBALL'
 
             echo """
             ------------------------------------------------
-            Upload Libreoffice to packages.nuxeo.com
+            Upload LibreOffice to packages.nuxeo.com
             ------------------------------------------------"""
             nxUtils.uploadFile(credentialsId: 'packages.nuxeo.com-auth', file: env.LIBREOFFICE_TARBALL,
                 url: 'https://packages.nuxeo.com/repository/document-foundation-raw/')
