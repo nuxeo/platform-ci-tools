@@ -131,7 +131,7 @@ pipeline {
           ----------------------------------------
           Deploy Explorer export environment
           ----------------------------------------""".stripIndent()
-          nxWithHelmfileDeployment(file: 'Jenkinsfiles/explorer/export.d/helm/helmfile.yaml', secrets: [[name: 'instance-clid', namespace: 'platform']]) {
+          nxWithHelmfileDeployment(file: 'Jenkinsfiles/explorer/export.d/helm/helmfile.yaml.gotmpl', secrets: [[name: 'instance-clid', namespace: 'platform']]) {
             script {
               sh "mkdir -p target"
               String nuxeoUrl = "nuxeo.${NAMESPACE}.svc.cluster.local/nuxeo"
@@ -182,7 +182,7 @@ pipeline {
               ----------------------------------------
               Deploy Explorer import environment
               ----------------------------------------""".stripIndent()
-              nxWithHelmfileDeployment(file: 'Jenkinsfiles/explorer/export.d/helm/helmfile.yaml', secrets: [[name: 'instance-clid', namespace: 'platform']]) {
+              nxWithHelmfileDeployment(file: 'Jenkinsfiles/explorer/export.d/helm/helmfile.yaml.gotmpl', secrets: [[name: 'instance-clid', namespace: 'platform']]) {
                 String nuxeoUrl = "nuxeo.${NAMESPACE}.svc.cluster.local/nuxeo"
                 String explorerUrl = "${nuxeoUrl}/site/distribution"
                 echo """
